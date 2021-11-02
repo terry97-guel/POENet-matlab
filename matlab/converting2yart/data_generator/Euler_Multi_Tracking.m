@@ -3,7 +3,7 @@ clear
 clc
 rng(1)
 PutNoise = true;
-sigma = 0;
+sigma = 0.02;
 
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain/
@@ -48,7 +48,7 @@ for scale = (1:number_of_curve)
 end
 hold off
 data = [a',data];
-dlmwrite('Sigma_0_Euler.txt',data,' ') %uncomment to save data
+dlmwrite(strcat('Sigma_', num2str(sigma), '_Euler.txt'),data,' ') %uncomment to save data
 %% plotting for integrity test
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain/
