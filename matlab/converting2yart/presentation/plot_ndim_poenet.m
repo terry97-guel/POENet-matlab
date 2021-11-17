@@ -2,7 +2,7 @@ addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/
 
 ccc
-folder = 'data/2dim_log_spiral/945/';
+folder = 'data/2dim_log_spiral/';
 
 % upload data
 jointTwist = dlmread(strcat(folder,'jointTwist.txt'))';
@@ -10,7 +10,6 @@ jointAngle = dlmread(strcat(folder,'jointAngle.txt'));
 M_se3 = dlmread(strcat(folder,'M_se3.txt'));
 targetPose = dlmread(strcat(folder,'targetPose.txt'));
 outputPose = dlmread(strcat(folder,'outputPose.txt'));
-
 
 % predeclaration
 original_jointTwist = jointTwist;
@@ -21,24 +20,26 @@ nJoint = size(original_jointTwist,2);
 output_p = zeros(nJoint,3);
 q_link   = zeros(nJoint+1,3);
 
-fig_size = 18;
+fig_size_921 = [-15,+10,-10,+20,-3,+5];
+fig_size_945 = 18*[-0.1,+1.1,-0.1,+1.0,-0.2,+0.2];
+
 % set figure
 fig = set_fig(figure(1),'pos',[0.6,0.4,0.3,0.5],...
-    'view_info',[80,26],'axis_info',fig_size*[-0.1,+1.1,-0.1,+1.0,-0.2,+0.2],'AXIS_EQUAL',1,'GRID_ON',1,...
+    'view_info',[80,26],'axis_info',fig_size_921,'AXIS_EQUAL',1,'GRID_ON',1,...
     'REMOVE_MENUBAR',1,'USE_DRAGZOOM',1,'SET_CAMLIGHT',1,'SET_MATERIAL','METAL',...
     'SET_AXISLABEL',1,'afs',18,'interpreter','latex','NO_MARGIN',0);
 
 targetpose = targetPose;
 plot_traj(targetpose,'fig_idx',1,'subfig_idx',1,'tlc','b','tlw',1.5,'tls','-');
 
-% plot NaiveOutputPose
-NaiveoutputPose = dlmread(strcat(folder,'NaiveOutputPose.txt'));
-plot_traj(NaiveoutputPose ,'fig_idx',1,'subfig_idx',2,'tlc','k','tlw',2,'tls','-');
+% % plot NaiveOutputPose
+% NaiveoutputPose = dlmread(strcat(folder,'NaiveOutputPose.txt'));
+% plot_traj(NaiveoutputPose ,'fig_idx',1,'subfig_idx',2,'tlc','k','tlw',2,'tls','-');
 
 
 % loop
 tick = 0; run_mode = 'STOP'; j=1; max_j = nData; tfc = 'k';
-arrow_scale = 0.5; g_key = ''; text_fs = 1; lw = 0.1;
+arrow_scale = 0.5; g_key = ''; text_fs = 2; lw = 1;
 while 1
     g_key = get(gcf,'CurrentKey');
     
@@ -147,6 +148,7 @@ for joint = (1:njoint)
     v = twist(4:6,1);
     h(joint) = (w'*v)/(w'*w);
 end
+h
 %% Only Plot trajectory
 addpath ../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain/
 addpath ../../../../Simulator/yet-another-robotics-toolbox/code/

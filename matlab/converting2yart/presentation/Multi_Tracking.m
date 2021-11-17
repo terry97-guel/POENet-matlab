@@ -1,16 +1,15 @@
-%%
-addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain/
+%% More visualized
 addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/
 
 ccc
 
 % set data path
 folder = 'data/multi_tracking/';
-FileName = 'Sigma_0.02_Euler.txt';
+FileName = 'Sigma_0.005_Euler.txt';
 TargetFile = 'Sigma_0_Euler.txt';
 % set scale info
 scale = 100;
-noise_scale = 0.01 * scale;
+noise_scale = 0.001 * scale;
 arrow_scale = 0.5;
 text_fs = 10;
 
@@ -20,7 +19,10 @@ fig = set_fig(figure(1),'pos',[0.6,0.4,0.3,0.5],...
     'view_info',[0,90],'axis_info',fig_size*[0.1,+1.0,-0.1,+0.6,-0.5,+0.5],'AXIS_EQUAL',1,'GRID_ON',1,...
     'REMOVE_MENUBAR',1,'USE_DRAGZOOM',1,'SET_CAMLIGHT',1,'SET_MATERIAL','METAL',...
     'SET_AXISLABEL',1,'afs',18,'interpreter','latex','NO_MARGIN',0);
-
+% fig = set_fig(figure(1),'pos',[0.6,0.4,0.3,0.5],...
+%     'view_info',[80,26],'axis_info',fig_size*[-0.1,+1.1,-0.1,+1.0,-0.2,+0.2],'AXIS_EQUAL',1,'GRID_ON',1,...
+%     'REMOVE_MENUBAR',1,'USE_DRAGZOOM',1,'SET_CAMLIGHT',1,'SET_MATERIAL','METAL',...
+%     'SET_AXISLABEL',1,'afs',18,'interpreter','latex','NO_MARGIN',0);
 
 % Plot TrackerPosition Trajectory
 data = dlmread(strcat(folder,TargetFile))';
@@ -39,10 +41,10 @@ pt1 = data(2:4,:)*scale;
 pt2 = data(5:7,:)*scale;
 pt3 = data(8:10,:)*scale;
 pt4 = data(11:13,:)*scale;
-scatter3(pt1(1,:),pt1(2,:),pt1(3,:));
-scatter3(pt2(1,:),pt2(2,:),pt2(3,:));
-scatter3(pt3(1,:),pt3(2,:),pt3(3,:));
-scatter3(pt4(1,:),pt4(2,:),pt4(3,:));
+scatter3(pt1(1,:),pt1(2,:),pt1(3,:),'MarkerFaceColor','r','MarkerEdgeColor','r');
+scatter3(pt2(1,:),pt2(2,:),pt2(3,:),'MarkerFaceColor','g','MarkerEdgeColor','g');
+scatter3(pt3(1,:),pt3(2,:),pt3(3,:),'MarkerFaceColor','b','MarkerEdgeColor','b');
+scatter3(pt4(1,:),pt4(2,:),pt4(3,:),'MarkerFaceColor','m','MarkerEdgeColor','r');
 
 % set tracker
 tracker = trackerJPDA('TrackLogic','History', 'AssignmentThreshold',1000,...
@@ -63,11 +65,17 @@ while 1
     
     if isequal(run_mode,'RUN')
         % Create detections of the two objects with noise.
-        detection(1) = objectDetection(tick,pt1(:,tick),'MeasurementNoise',noise_scale);
-        detection(2) = objectDetection(tick,pt2(:,tick),'MeasurementNoise',noise_scale);
-        detection(3) = objectDetection(tick,pt3(:,tick),'MeasurementNoise',noise_scale);
-        detection(4) = objectDetection(tick,pt4(:,tick),'MeasurementNoise',noise_scale);
-
+        if mod(tick,2)==1 % Note Detection is made without order
+            detection(1) = objectDetection(tick,pt1(:,tick),'MeasurementNoise',noise_scale);
+            detection(2) = objectDetection(tick,pt2(:,tick),'MeasurementNoise',noise_scale);
+            detection(3) = objectDetection(tick,pt3(:,tick),'MeasurementNoise',noise_scale);
+            detection(4) = objectDetection(tick,pt4(:,tick),'MeasurementNoise',noise_scale);
+        else
+            detection(4) = objectDetection(tick,pt1(:,tick),'MeasurementNoise',noise_scale);
+            detection(1) = objectDetection(tick,pt2(:,tick),'MeasurementNoise',noise_scale);
+            detection(3) = objectDetection(tick,pt3(:,tick),'MeasurementNoise',noise_scale);
+            detection(2) = objectDetection(tick,pt4(:,tick),'MeasurementNoise',noise_scale);
+        end
         % Step the tracker through time with the detections.
         [confirmed,tentative,alltracks,info] = tracker(detection,tick);
 
@@ -140,83 +148,7 @@ end
 if ishandle(fig), plot_title('Terminated','fig_idx',1,'tfs',20,'tfc','r'); end
 fprintf('Done.\n');
 
-%%
-addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/spatial_chain/
-addpath ../../../../../Simulator/yet-another-robotics-toolbox/code/
-
-ccc
-folder = 'data/multi_tracking/';
-
-data = dlmread(strcat(folder,'Sigma_0.005_Euler.txt'))';
-motor = data(1,:);
-scale = 100;
-noise_scale = 0.1;
-pt1 = data(2:4,:)*scale;
-pt2 = data(5:7,:)*scale;
-pt3 = data(8:10,:)*scale;
-pt4 = data(11:13,:)*scale;
-
-
-tracker = trackerJPDA('TrackLogic','History', 'AssignmentThreshold',100,...
-    'ConfirmationThreshold', [4 5], ...
-    'DeletionThreshold', [20 20]);
-
-tp = theaterPlot('XLimits',[0 scale],'YLimits',[0 scale]);
-trackP = trackPlotter(tp,'DisplayName','Tracks','MarkerFaceColor','g','HistoryDepth',0);
-detectionP = detectionPlotter(tp,'DisplayName','Detections','MarkerFaceColor','r');
-
-positionSelector = [1 0 0 0 0 0; 0 0 1 0 0 0; 0 0 0 0 0 0]; 
-velocitySelector = [0 1 0 0 0 0; 0 0 0 1 0 0; 0 0 0 0 0 0];
-
-fig_size = scale;
-fig = set_fig(figure(1),'pos',[0.6,0.4,0.3,0.5],...
-    'view_info',[0,90],'axis_info',fig_size*[-0.1,+1.1,-0.1,+1.0,-0.2,+0.2],'AXIS_EQUAL',1,'GRID_ON',1,...
-    'REMOVE_MENUBAR',1,'USE_DRAGZOOM',1,'SET_CAMLIGHT',1,'SET_MATERIAL','METAL',...
-    'SET_AXISLABEL',1,'afs',18,'interpreter','latex','NO_MARGIN',0);
-
-for time = 1:62
-    % Create detections of the two objects with noise.
-    detection(1) = objectDetection(time,pt1(:,time),'MeasurementNoise',noise_scale);
-    detection(2) = objectDetection(time,pt2(:,time),'MeasurementNoise',noise_scale);
-    detection(3) = objectDetection(time,pt3(:,time),'MeasurementNoise',noise_scale);
-    detection(4) = objectDetection(time,pt4(:,time),'MeasurementNoise',noise_scale);
-    
-    % Step the tracker through time with the detections.
-    [confirmed,tentative,alltracks,info] = tracker(detection,time);
-    
-    % Extract position, velocity and label info.
-    [pos,cov] = getTrackPositions(confirmed,positionSelector);
-    vel = getTrackVelocities(confirmed,velocitySelector);
-    meas = cat(2,detection.Measurement);
-    measCov = cat(3,detection.MeasurementNoise);
-    
-    % Update the plot if there are any tracks.
-    if numel(confirmed)>0
-        labels = arrayfun(@(x)num2str([x.TrackID]),confirmed,'UniformOutput',false);
-        trackP.plotTrack(pos,vel,cov,labels);
-    end
-    detectionP.plotDetection(meas',measCov);
-    drawnow;
-    
-    % Display the cost and marginal probability of distribution every eight
-    % seconds.
-    if time>0 && mod(time,8) == 0
-        disp(['At time t = ' num2str(time) ' seconds,']);
-        disp('The cost of assignment was: ')
-        disp(info.CostMatrix);
-        disp(['Number of clusters: ' num2str(numel(info.Clusters))]);
-        if numel(info.Clusters) == 1
-            
-            disp('The two tracks were in the same cluster.')
-            disp('Marginal probabilities of association:')
-            disp(info.Clusters{1}.MarginalProbabilities)
-        end
-        disp('-----------------------------')
-    end
-    pause(0.1)
-end
-
-%%
+%% MATLAB Example 
 ccc
 
 tracker = trackerJPDA('TrackLogic','History', 'AssignmentThreshold',100,...
